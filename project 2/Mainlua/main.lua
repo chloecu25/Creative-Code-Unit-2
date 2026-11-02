@@ -1,0 +1,178 @@
+require("L5")
+
+-- Canvas size
+local canvasSize = 1200
+
+local backgrounds = {
+  {255, 72, 176}, -- pink
+  {0, 120, 191}    -- blue
+}
+
+local backgroundNumber = 1
+
+--color palette
+    local palettes = {
+  {
+    {0, 0, 0},       
+    {0, 120, 191},   
+    {255, 72, 176},  
+    {255, 232, 0}    
+  }
+  }
+
+  local paletteNumber = 1
+  local circles = {}
+  local decorations = {}
+
+  -- Make the circles
+   function makeCircles()
+    circles = {}
+
+    for i = 1, 12 do
+      local c = {}
+
+      --give circles a random position
+      c.x = random(100, canvasSize - 100)
+      c.y = random(100, canvasSize - 100)
+
+      -- Remember start position
+      c.startX = c.x
+      c.startY = c.y
+
+      c.diameter = random(25, 85)
+      c.colorNumber = math.floor(random(1, 4.99))
+
+      -- randomness: decides if there is an outline or fill
+      c.ring = random(1, 2) > 1
+
+      -- randomness: decide if it has an inner circle
+      c.innerCircle = random(1, 2) == 1
+
+      -- ring movement speed
+      c.phase = random(0, 6.28)
+      c.speed = random(0.025, 0.06)
+      
+      circles[i] = c
+    end
+  end
+
+  -- make lines like a dial
+   function makeLines()
+    decorations = {}
+
+    for i = 1, 150 do
+      local newLine = {}
+
+      newLine.x = random(50, canvasSize - 50)
+      newLine.y = random(50, canvasSize - 50)
+      newLine.length = random(10, 25)
+      newLine.angle = random(0, 6.28)
+
+      decorations[i] = newLine
+    end
+  end
+
+function setup()
+  size(1200, 1200)
+  windowTitle("ProjectTwo")
+
+  makeCircles()
+  makeLines()
+end
+
+--change colors / placement when mouse is clicked
+function mousePressed()
+  backgroundNumber = backgroundNumber + 1
+
+if backgroundNumber > 2 then
+  backgroundNumber = 1
+end
+  paletteNumber = paletteNumber + 1
+
+  if paletteNumber > 1 then
+  paletteNumber = 1
+end
+
+  --move circles
+  for i = 1, #circles do
+    local c = circles[i]
+
+    c.x = random(100, canvasSize - 100)
+    c.y = random(100, canvasSize - 100)
+
+    c.colorNumber = math.floor(random(1,5))
+
+    -- Randomize circle appearance
+    c.ring = random(1, 2) > 1
+    c.innerCircle = random(1, 2) == 1
+  
+  end
+
+  makeLines()
+end
+
+function draw()
+  background(backgrounds[backgroundNumber][1],
+  backgrounds[backgroundNumber][2],
+  backgrounds[backgroundNumber][3]
+)
+
+-- Draw decor lines
+strokeWeight(3)
+stroke(0, 120, 191)
+
+for i = 1, #decorations do
+  local thisLine = decorations[i]
+
+  local x1 = thisLine.x
+  local y1 = thisLine.y
+  local x2 = x1 + math.cos(thisLine.angle) * thisLine.length
+  local y2 = y1 + math.sin(thisLine.angle) * thisLine.length
+
+
+  line(x1, y1, x2, y2)
+end
+
+-- Draw circles
+for i = 1, #circles do
+  local c = circles[i]
+  
+  -- moving to the new position.
+  c.startX = c.startX + (c.x - c.startX) * 0.05
+  c.startY = c.startY + (c.y - c.startY) * 0.05
+
+  -- Choose a color from current color palette.
+local chosenColor = palettes[paletteNumber][c.colorNumber]
+
+
+  if c.ring then
+    -- outlines
+    stroke(
+    
+    chosenColor[1],
+
+    chosenColor[2],
+
+    chosenColor[3]
+  )
+  strokeWeight(5)
+
+    circle(c.startX, c.startY, c.diameter)
+ -- Draw smaller ring inside of it.
+
+    circle(c.startX, c.startY, c.diameter * 0.55)
+else
+    -- Solid filled circle
+    noStroke()
+    fill(
+        chosenColor[1],
+        chosenColor[2],
+        chosenColor[3]
+    )
+
+    circle(c.startX, c.startY, c.diameter)
+
+  end
+  
+end
+end
